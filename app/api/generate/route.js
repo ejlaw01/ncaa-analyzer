@@ -3,8 +3,24 @@ import { fetchAllData, clearCache } from "@/lib/oddsApi";
 import { analyzeAllGames, groupByConference } from "@/lib/analyzer";
 import { setStoredPicks } from "@/lib/picksStore";
 import { todayString } from "@/lib/utils";
+import {
+  upsertScores,
+  upsertGamesWithOdds,
+  fetchAllScores,
+  fetchAllGamesWithOdds,
+} from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Merge two arrays by `id`, with `primary` winning on conflicts.
+ */
+function mergeById(primary, secondary) {
+  const map = new Map();
+  for (const item of secondary) map.set(item.id, item);
+  for (const item of primary) map.set(item.id, item);
+  return Array.from(map.values());
+}
 
 /**
  * GET /api/generate
@@ -26,11 +42,45 @@ export async function GET(request) {
       clearCache();
     }
 
-    // Fetch data (cached or fresh)
+    // Fetch data from Odds API (cached or fresh)
     const data = await fetchAllData();
 
-    // Run analysis
-    const analyses = analyzeAllGames(data.todaysGames, data.recentScores);
+    // --- Supabase: store + enrich (graceful fallback on error) ---
+    let enrichedScores = data.recentScores;
+    let enrichedOdds = data.todaysGames;
+
+    try {
+      // Upsert fresh API data into Supabase (fire-and-forget style, but await)
+      await Promise.all([
+        upsertScores(data.recentScores),
+        upsertGamesWithOdds(data.todaysGames),
+      ]);
+
+      // Fetch full history from Supabase
+      const [dbScores, dbOdds] = await Promise.all([
+        fetchAllScores(),
+        fetchAllGamesWithOdds(),
+      ]);
+
+      // Merge: API data wins on conflicts (fresher)
+      if (dbScores.length > 0) {
+        enrichedScores = mergeById(data.recentScores, dbScores);
+        console.log(
+          `[Generate] Enriched scores: ${data.recentScores.length} API + ${dbScores.length} DB → ${enrichedScores.length} merged`
+        );
+      }
+      if (dbOdds.length > 0) {
+        enrichedOdds = mergeById(data.todaysGames, dbOdds);
+        console.log(
+          `[Generate] Enriched odds: ${data.todaysGames.length} API + ${dbOdds.length} DB → ${enrichedOdds.length} merged`
+        );
+      }
+    } catch (dbError) {
+      console.error("[Generate] Supabase error (falling back to API only):", dbError.message);
+    }
+
+    // Run analysis with enriched data
+    const analyses = analyzeAllGames(data.todaysGames, enrichedScores, enrichedOdds);
     const grouped = groupByConference(analyses);
 
     // Filter to only recommendations (4+ overs)
