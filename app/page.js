@@ -1,0 +1,118 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import PicksTable from "@/components/PicksTable";
+import RefreshButton from "@/components/RefreshButton";
+import DownloadButton from "@/components/DownloadButton";
+
+export default function Home() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  // Load cached picks on mount (no API call)
+  useEffect(() => {
+    async function loadCached() {
+      try {
+        const res = await fetch("/api/picks");
+        const json = await res.json();
+        if (json.data) {
+          setData(json.data);
+        }
+      } catch {
+        // No cached picks, that's fine
+      } finally {
+        setInitialLoad(false);
+      }
+    }
+    loadCached();
+  }, []);
+
+  // Refresh: calls The Odds API and regenerates picks
+  const handleRefresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/generate?refresh=true");
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to generate picks");
+      }
+      setData(json);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      {/* Header */}
+      <header className="mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              NCAA Basketball Picks
+            </h1>
+            <p className="mt-1 text-gray-400">{today}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <RefreshButton onRefresh={handleRefresh} loading={loading} />
+            <DownloadButton disabled={!data} />
+          </div>
+        </div>
+
+        {/* Last generated timestamp */}
+        {data?.generatedAt && (
+          <div className="mt-3 text-xs text-gray-600">
+            Last generated:{" "}
+            {new Date(data.generatedAt).toLocaleString("en-US", {
+              timeZone: "America/New_York",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+              month: "short",
+              day: "numeric",
+            })}{" "}
+            ET
+          </div>
+        )}
+      </header>
+
+      {/* Error state */}
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-800 bg-red-900/30 p-4 text-red-300">
+          <div className="font-medium">Error</div>
+          <div className="text-sm mt-1">{error}</div>
+        </div>
+      )}
+
+      {/* Loading state */}
+      {initialLoad ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      ) : (
+        <PicksTable data={data} />
+      )}
+
+      {/* Footer */}
+      <footer className="mt-12 border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
+        <p>
+          Over/Under analysis based on last 3 non-OT games per team. Recommends
+          games where 4+ of 6 analyzed games went over. For entertainment
+          purposes only.
+        </p>
+      </footer>
+    </main>
+  );
+}
