@@ -1,106 +1,329 @@
 "use client";
 
-import { useState } from "react";
-import PickCard from "./PickCard";
+import { useState, Fragment } from "react";
 
-/**
- * Displays all picks organized by conference with tab filtering.
- */
 export default function PicksTable({ data }) {
-  const [activeConference, setActiveConference] = useState("All");
-  const [showOnlyRecommended, setShowOnlyRecommended] = useState(false);
+  const [activeTab, setActiveTab] = useState("recommended");
+  const [sortCol, setSortCol] = useState("value");
+  const [sortDir, setSortDir] = useState("desc");
 
   if (!data) {
     return (
-      <div className="rounded-xl border border-gray-800 bg-gray-900 p-12 text-center">
-        <div className="text-gray-500 text-lg">No picks generated yet</div>
-        <div className="text-gray-600 text-sm mt-2">
-          Click &quot;Refresh Data&quot; to fetch today&apos;s games and generate analysis.
+      <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
+        <div className="text-gray-400 text-lg">No picks generated yet</div>
+        <div className="text-gray-400 text-sm mt-2">
+          Click &quot;Refresh Data&quot; to fetch today&apos;s games and generate
+          analysis.
         </div>
       </div>
     );
   }
 
-  const conferences = ["All", ...Object.keys(data.byConference)];
-  const analyses =
-    activeConference === "All"
-      ? data.allAnalyses
-      : data.byConference[activeConference] || [];
+  const byConference = data.byConference || {};
 
-  const filtered = showOnlyRecommended
-    ? analyses.filter((a) => a.meetsCriteria)
-    : analyses;
+  const getFilteredByConference = () => {
+    const result = {};
+    for (const [conf, analyses] of Object.entries(byConference)) {
+      const filtered =
+        activeTab === "recommended"
+          ? analyses.filter((a) => a.meetsCriteria)
+          : analyses;
+      if (filtered.length > 0) {
+        result[conf] = filtered;
+      }
+    }
+    return result;
+  };
+
+  const filteredConferences = getFilteredByConference();
+  const hasResults = Object.keys(filteredConferences).length > 0;
+
+  const recommendedCount = data.totalRecommendations || 0;
+  const allCount = data.totalAnalyzed || 0;
+
+  const formatScore = (game) =>
+    game.isHome
+      ? `${game.homeScore}-${game.awayScore}`
+      : `${game.awayScore}-${game.homeScore}`;
+
+  const getOvers = (history) => {
+    const withLines = history.filter((g) => g.overUnder !== null);
+    const overs = withLines.filter((g) => g.overUnder === "OVER").length;
+    return `${overs}/${withLines.length}`;
+  };
+
+  const getValueClass = (value) => {
+    if (value > 10) return "value-strong";
+    if (value > 0) return "value-pos";
+    return "";
+  };
+
+  const columns = [
+    { key: "awayTeam", label: "Away" },
+    { key: "homeTeam", label: "Home" },
+    { key: "conference", label: "Conf" },
+    { key: "todaysLine", label: "O/U", numeric: true },
+    { key: "awayAvg", label: "Away Avg", numeric: true },
+    { key: "homeAvg", label: "Home Avg", numeric: true },
+    { key: "combinedAvg", label: "Comb Avg", numeric: true },
+    { key: "value", label: "Value", numeric: true },
+    { key: "overs", label: "Overs", numeric: true },
+    { key: "meetsCriteria", label: "Rec" },
+  ];
+
+  const handleSort = (key) => {
+    if (sortCol === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(key);
+      setSortDir(key === "awayTeam" || key === "homeTeam" || key === "conference" ? "asc" : "desc");
+    }
+  };
+
+  const getSortValue = (a, key) => {
+    if (key === "overs") return a.totalGamesAnalyzed > 0 ? a.overCount / a.totalGamesAnalyzed : 0;
+    if (key === "meetsCriteria") return a.meetsCriteria ? 1 : 0;
+    return a[key];
+  };
+
+  const sortIndicator = (key) => {
+    if (sortCol !== key) return <span className="sort-arrow inactive">{"\u25BC"}</span>;
+    return <span className="sort-arrow">{sortDir === "asc" ? "\u25B2" : "\u25BC"}</span>;
+  };
+
+  const renderAllGamesTable = () => {
+    const allAnalyses = data.allAnalyses || [];
+    if (allAnalyses.length === 0) {
+      return (
+        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
+          No games analyzed yet.
+        </div>
+      );
+    }
+
+    const sorted = [...allAnalyses].sort((a, b) => {
+      const av = getSortValue(a, sortCol);
+      const bv = getSortValue(b, sortCol);
+      const cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return (
+      <table className="all-table">
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className={`sortable${col.numeric ? " num" : ""}`}
+                onClick={() => handleSort(col.key)}
+              >
+                {col.label} {sortIndicator(col.key)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((a, i) => {
+            const valueDisplay = `${a.value > 0 ? "+" : ""}${a.value}`;
+            const valueClass =
+              a.value > 10 ? "value-badge" : a.value > 0 ? "value-pos" : a.value < 0 ? "value-neg" : "";
+            return (
+              <tr key={`${a.awayTeam}-${a.homeTeam}-${i}`}>
+                <td data-label="Away">{a.awayTeam}</td>
+                <td data-label="Home">{a.homeTeam}</td>
+                <td data-label="Conf">{a.conference}</td>
+                <td data-label="O/U" className="num">{a.todaysLine}</td>
+                <td data-label="Away Avg" className="num">{a.awayAvg}</td>
+                <td data-label="Home Avg" className="num">{a.homeAvg}</td>
+                <td data-label="Comb Avg" className="num">{a.combinedAvg}</td>
+                <td data-label="Value" className="num">
+                  <span className={valueClass}>{valueDisplay}</span>
+                </td>
+                <td data-label="Overs" className="num">
+                  {a.overCount}/{a.totalGamesAnalyzed}
+                </td>
+                <td data-label="Rec">
+                  {a.meetsCriteria ? (
+                    <span className="rec-yes">YES</span>
+                  ) : (
+                    <span className="rec-no">no</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  };
+
+  const renderTeamSection = (teamName, label, history, avg) => (
+    <Fragment>
+      <tr className="team-name-row">
+        <td colSpan="4">
+          {teamName} <span className="team-label">({label})</span>
+        </td>
+        <td colSpan="2" className="team-avg">
+          Avg: {avg} &bull; Overs: {getOvers(history)}
+        </td>
+      </tr>
+      <tr className="col-header-row">
+        <th>Date</th>
+        <th>Opponent</th>
+        <th>Score</th>
+        <th>Total</th>
+        <th>O/U Line</th>
+        <th>Result</th>
+      </tr>
+      {history.map((game, i) => (
+        <tr key={i} className="game-row">
+          <td data-label="Date">{game.dateDisplay}</td>
+          <td data-label="Opponent">{game.opponent}</td>
+          <td data-label="Score" className="num">
+            {formatScore(game)}
+          </td>
+          <td data-label="Total" className="num">
+            <strong>{game.totalScore}</strong>
+          </td>
+          <td data-label="O/U Line" className="num">
+            {game.overUnderLine || "\u2014"}
+          </td>
+          <td data-label="Result">
+            {game.overUnder ? (
+              <span className={game.overUnder === "OVER" ? "over" : "under"}>
+                {game.overUnder}
+              </span>
+            ) : (
+              "\u2014"
+            )}
+          </td>
+        </tr>
+      ))}
+    </Fragment>
+  );
+
+  const renderMatchup = (analysis, idx) => {
+    const valueClass = getValueClass(analysis.value);
+    const valueDisplay = `${analysis.value > 0 ? "+" : ""}${analysis.value}`;
+
+    return (
+      <Fragment key={`${analysis.homeTeam}-${analysis.awayTeam}-${idx}`}>
+        <tr className="matchup-row">
+          <td colSpan="5">
+            {analysis.awayTeam} @ {analysis.homeTeam}
+          </td>
+          <td className="matchup-line">
+            O/U
+            <br />
+            {analysis.todaysLine}
+          </td>
+        </tr>
+        {analysis.hasEnoughData ? (
+          <>
+            {renderTeamSection(
+              analysis.awayTeam,
+              "Away",
+              analysis.awayHistory,
+              analysis.awayAvg
+            )}
+            {renderTeamSection(
+              analysis.homeTeam,
+              "Home",
+              analysis.homeHistory,
+              analysis.homeAvg
+            )}
+          </>
+        ) : (
+          <tr className="game-row">
+            <td
+              colSpan="6"
+              style={{ fontStyle: "italic", color: "#9ca3af" }}
+            >
+              Insufficient historical data for this matchup.
+            </td>
+          </tr>
+        )}
+        <tr className="summary-row">
+          <td colSpan="2">
+            Expected: <strong>{analysis.combinedAvg}</strong> &nbsp;|&nbsp;
+            Line: <strong>{analysis.todaysLine}</strong>
+          </td>
+          <td colSpan="2">
+            <span className={valueClass}>
+              Value: {valueDisplay} pts
+            </span>
+          </td>
+          <td colSpan="2">Overs: {analysis.overCount}/{analysis.totalGamesAnalyzed}</td>
+        </tr>
+        <tr className="spacer-row">
+          <td colSpan="6"></td>
+        </tr>
+      </Fragment>
+    );
+  };
 
   return (
-    <div className="space-y-4">
+    <div>
       {/* Stats bar */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
         <span>
-          <span className="text-gray-200 font-medium">{data.totalGamesToday}</span>{" "}
-          games today
+          Recommended: <strong className="text-gray-700">{recommendedCount}</strong> games
+          (4+ overs in last 6 &bull; strong value = 10+ pts above line)
         </span>
-        <span>
-          <span className="text-gray-200 font-medium">{data.totalAnalyzed}</span>{" "}
-          analyzed
-        </span>
-        <span>
-          <span className="text-green-400 font-medium">
-            {data.totalRecommendations}
-          </span>{" "}
-          recommended
-        </span>
-        {data.apiQuota && (
-          <span className="ml-auto text-xs text-gray-600">
-            API: {data.apiQuota.remaining} requests remaining
-          </span>
-        )}
       </div>
 
-      {/* Conference tabs */}
-      <div className="flex flex-wrap items-center gap-2">
-        {conferences.map((conf) => (
-          <button
-            key={conf}
-            onClick={() => setActiveConference(conf)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-              activeConference === conf
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
-            }`}
-          >
-            {conf}
-            {conf !== "All" && (
-              <span className="ml-1 text-xs opacity-60">
-                ({(data.byConference[conf] || []).length})
-              </span>
-            )}
-          </button>
-        ))}
-
-        <label className="ml-auto flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showOnlyRecommended}
-            onChange={(e) => setShowOnlyRecommended(e.target.checked)}
-            className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
-          />
-          Only recommended
-        </label>
+      {/* Tabs */}
+      <div className="tab-bar">
+        <button
+          onClick={() => setActiveTab("recommended")}
+          className={`tab-btn ${activeTab === "recommended" ? "active" : ""}`}
+        >
+          Recommended Picks ({recommendedCount})
+        </button>
+        <button
+          onClick={() => setActiveTab("all")}
+          className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
+        >
+          All Games ({allCount})
+        </button>
       </div>
 
-      {/* Pick cards */}
-      {filtered.length === 0 ? (
-        <div className="rounded-xl border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">
-          {showOnlyRecommended
-            ? "No recommended picks in this conference."
-            : "No games found for this conference."}
+      {/* Table */}
+      {activeTab === "all" ? (
+        renderAllGamesTable()
+      ) : !hasResults ? (
+        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
+          No recommended picks today.
         </div>
       ) : (
-        <div className="space-y-4">
-          {filtered.map((analysis, i) => (
-            <PickCard key={`${analysis.homeTeam}-${analysis.awayTeam}-${i}`} analysis={analysis} />
-          ))}
-        </div>
+        <table className="picks-table">
+          <colgroup>
+            <col style={{ width: "90px" }} />
+            <col />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "80px" }} />
+            <col style={{ width: "90px" }} />
+            <col style={{ width: "80px" }} />
+          </colgroup>
+          <tbody>
+            {Object.entries(filteredConferences).map(
+              ([conf, analyses], confIdx) => (
+                <Fragment key={conf}>
+                  {confIdx > 0 && (
+                    <tr className="conf-spacer">
+                      <td colSpan="6"></td>
+                    </tr>
+                  )}
+                  <tr className="conf-row">
+                    <td colSpan="6">{conf}</td>
+                  </tr>
+                  {analyses.map((analysis, i) => renderMatchup(analysis, i))}
+                </Fragment>
+              )
+            )}
+          </tbody>
+        </table>
       )}
     </div>
   );

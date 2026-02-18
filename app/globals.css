@@ -4,6 +4,411 @@
 
 @layer base {
   body {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-gray-100 text-gray-900;
+  }
+}
+
+/* ── Picks table ─────────────────────────────────── */
+
+.picks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.picks-table td,
+.picks-table th {
+  padding: 8px 12px;
+  text-align: left;
+}
+
+/* Conference header */
+.conf-row td {
+  background: #4052b5;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+}
+
+/* Matchup row: "Away @ Home" */
+.matchup-row td {
+  background: #f3f4f6;
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.matchup-line {
+  text-align: right !important;
+  color: #6b7280;
+  font-weight: 400 !important;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Team name + avg row */
+.team-name-row td {
+  background: #fff;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 14px 4px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.team-label {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.team-avg {
+  text-align: right !important;
+  color: #16a34a;
+  font-weight: 600 !important;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Column headers */
+.col-header-row th {
+  background: #e8e6c8;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 5px 12px;
+  border-bottom: 1px solid #d4d2b0;
+}
+
+/* Individual game rows */
+.game-row td {
+  padding: 7px 12px;
+  color: #374151;
+  background: #fff;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.game-row:hover td {
+  background: #f9fafb;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Over / Under result badges */
+.over {
+  display: inline-block;
+  background: #bbf7d0;
+  color: #166534;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+.under {
+  display: inline-block;
+  background: #fecaca;
+  color: #991b1b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+/* Value styling */
+.value-strong {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.value-pos {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Summary row */
+.summary-row td {
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.875rem;
+  padding: 10px 14px;
+  border-top: 2px solid #d1d5db;
+}
+
+/* Spacer between matchups */
+.spacer-row td {
+  height: 20px;
+  padding: 0;
+  background: #fff;
+  border: none;
+}
+
+/* Conference spacer — extra gap before each conf-row */
+.conf-spacer td {
+  height: 28px;
+  padding: 0;
+  background: #fff;
+  border: none;
+}
+
+/* ── All Games summary table ─────────────────────── */
+
+.all-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.all-table th {
+  background: #e8e6c8;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 8px 14px;
+  border-bottom: 1px solid #d4d2b0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.all-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.all-table th.sortable:hover {
+  background: #dddbb0;
+}
+
+.sort-arrow {
+  display: inline-block;
+  width: 0.75em;
+  text-align: center;
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+.sort-arrow.inactive {
+  opacity: 0;
+}
+
+.all-table td {
+  padding: 10px 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: left;
+}
+
+.all-table tbody tr:hover td {
+  background: #f9fafb;
+}
+
+.all-table .num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Value badge for strong picks (>10) */
+.value-badge {
+  display: inline-block;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+
+/* Negative value */
+.value-neg {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Recommended badges */
+.rec-yes {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.rec-no {
+  color: #9ca3af;
+}
+
+/* ── Tabs ────────────────────────────────────────── */
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover {
+  color: #374151;
+}
+
+.tab-btn.active {
+  color: #4052b5;
+  border-bottom-color: #4052b5;
+}
+
+/* ── Mobile: CSS-only stacking (< 640px) ─────────── */
+
+@media (max-width: 640px) {
+  .picks-table,
+  .picks-table tbody,
+  .picks-table tr,
+  .picks-table td,
+  .picks-table th {
+    display: block;
+    width: 100%;
+  }
+
+  .picks-table colgroup {
+    display: none;
+  }
+
+  /* Hide column headers — replaced by data-label */
+  .col-header-row {
+    display: none;
+  }
+
+  /* Game rows: inline labeled pairs */
+  .game-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .game-row td {
+    display: inline;
+    width: auto;
+    padding: 0;
+    border: none;
+  }
+
+  .game-row td::before {
+    content: attr(data-label) ":\00a0";
+    color: #9ca3af;
+    font-size: 0.75rem;
+  }
+
+  .game-row td.num {
+    text-align: left !important;
+  }
+
+  /* Team name row: stack label + avg */
+  .team-name-row .team-avg {
+    text-align: left !important;
+    padding-top: 0;
+  }
+
+  /* Matchup line: stack below team names */
+  .matchup-line {
+    text-align: left !important;
+    padding-top: 0;
+    font-size: 0.85rem;
+  }
+
+  /* Summary row tds stack */
+  .summary-row td {
+    text-align: left !important;
+    padding: 4px 10px;
+  }
+
+  .summary-row td:first-child {
+    padding-top: 8px;
+    border-top: 2px solid #d1d5db;
+  }
+
+  .summary-row td:last-child {
+    padding-bottom: 8px;
+  }
+
+  /* Spacer */
+  .spacer-row,
+  .spacer-row td,
+  .conf-spacer,
+  .conf-spacer td {
+    height: 12px;
+    padding: 0;
+  }
+
+  /* All-table mobile: card-style stacking */
+  .all-table,
+  .all-table thead,
+  .all-table tbody,
+  .all-table tr,
+  .all-table th,
+  .all-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .all-table thead {
+    display: none;
+  }
+
+  .all-table tr {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .all-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    border: none;
+    text-align: right !important;
+  }
+
+  .all-table td::before {
+    content: attr(data-label);
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: left;
+    margin-right: 12px;
+  }
+
+  .all-table .num {
+    text-align: right !important;
   }
 }

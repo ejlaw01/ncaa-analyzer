@@ -55,15 +55,15 @@ export default function Home() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <main className="mx-auto max-w-[1400px] px-4 py-8">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">
-              NCAA Basketball Picks
+            <h1 className="text-2xl font-bold text-gray-900">
+              NCAA Basketball Over/Under Analysis &mdash;{" "}
+              {new Date().toISOString().slice(0, 10)}
             </h1>
-            <p className="mt-1 text-gray-400">{today}</p>
           </div>
           <div className="flex items-center gap-3">
             <RefreshButton onRefresh={handleRefresh} loading={loading} />
@@ -73,7 +73,7 @@ export default function Home() {
 
         {/* Last generated timestamp */}
         {data?.generatedAt && (
-          <div className="mt-3 text-xs text-gray-600">
+          <div className="mt-2 text-xs text-gray-400">
             Last generated:{" "}
             {new Date(data.generatedAt).toLocaleString("en-US", {
               timeZone: "America/New_York",
@@ -90,7 +90,7 @@ export default function Home() {
 
       {/* Error state */}
       {error && (
-        <div className="mb-6 rounded-lg border border-red-800 bg-red-900/30 p-4 text-red-300">
+        <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-red-700">
           <div className="font-medium">Error</div>
           <div className="text-sm mt-1">{error}</div>
         </div>
@@ -99,14 +99,14 @@ export default function Home() {
       {/* Loading state */}
       {initialLoad ? (
         <div className="flex items-center justify-center py-20">
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-400">Loading...</div>
         </div>
       ) : (
         <PicksTable data={data} />
       )}
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-gray-800 pt-6 text-center text-xs text-gray-600">
+      <footer className="mt-12 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
         <p>
           Over/Under analysis based on last 3 non-OT games per team. Recommends
           games where 4+ of 6 analyzed games went over. For entertainment
