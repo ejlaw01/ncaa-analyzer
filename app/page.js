@@ -11,22 +11,39 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  // Load cached picks on mount (no API call)
+  // Load picks on mount: try cache first, generate if empty
   useEffect(() => {
-    async function loadCached() {
+    async function loadData() {
       try {
         const res = await fetch("/api/picks");
         const json = await res.json();
         if (json.data) {
           setData(json.data);
+          setInitialLoad(false);
+          return;
         }
       } catch {
-        // No cached picks, that's fine
+        // No cached picks
+      }
+
+      // No cached data — auto-generate
+      try {
+        setLoading(true);
+        const res = await fetch("/api/generate");
+        const json = await res.json();
+        if (res.ok) {
+          setData(json);
+        } else {
+          setError(json.error || "Failed to generate picks");
+        }
+      } catch (err) {
+        setError(err.message);
       } finally {
+        setLoading(false);
         setInitialLoad(false);
       }
     }
-    loadCached();
+    loadData();
   }, []);
 
   // Refresh: calls The Odds API and regenerates picks

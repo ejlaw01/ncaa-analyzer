@@ -50,11 +50,9 @@ export async function GET(request) {
     let enrichedOdds = data.todaysGames;
 
     try {
-      // Upsert fresh API data into Supabase (fire-and-forget style, but await)
-      await Promise.all([
-        upsertScores(data.recentScores),
-        upsertGamesWithOdds(data.todaysGames),
-      ]);
+      // Upsert odds first, then scores — scores set completed=true and must go last
+      await upsertGamesWithOdds(data.todaysGames);
+      await upsertScores(data.recentScores);
 
       // Fetch full history from Supabase
       const [dbScores, dbOdds] = await Promise.all([
@@ -94,6 +92,11 @@ export async function GET(request) {
       totalAnalyzed: analyses.length,
       totalRecommendations: recommendations.length,
       apiQuota: data.quota,
+      dataPool: {
+        apiScores: data.recentScores.length,
+        enrichedScores: enrichedScores.length,
+        enrichedOdds: enrichedOdds.length,
+      },
       byConference: grouped,
       allAnalyses: analyses,
       recommendations,
