@@ -11,22 +11,9 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  // Load picks on mount: try cache first, generate if empty
+  // Always generate fresh data on page load (30-min API cache prevents excess calls)
   useEffect(() => {
     async function loadData() {
-      try {
-        const res = await fetch("/api/picks");
-        const json = await res.json();
-        if (json.data) {
-          setData(json.data);
-          setInitialLoad(false);
-          return;
-        }
-      } catch {
-        // No cached picks
-      }
-
-      // No cached data — auto-generate
       try {
         setLoading(true);
         const res = await fetch("/api/generate");
