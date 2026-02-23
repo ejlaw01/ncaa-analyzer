@@ -79,7 +79,7 @@ export default function Home() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               NCAA Basketball Over/Under Analysis &mdash;{" "}
-              {new Date().toISOString().slice(0, 10)}
+              {new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" })}
             </h1>
           </div>
           <div className="flex items-center gap-3">
