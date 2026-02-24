@@ -62,6 +62,7 @@ export default function PicksTable({ data }) {
     { key: "awayTeam", label: "Away" },
     { key: "homeTeam", label: "Home" },
     { key: "conference", label: "Conf" },
+    { key: "commenceTime", label: "Date" },
     { key: "todaysLine", label: "O/U", numeric: true },
     { key: "awayAvg", label: "Away Avg", numeric: true },
     { key: "homeAvg", label: "Home Avg", numeric: true },
@@ -76,13 +77,14 @@ export default function PicksTable({ data }) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortCol(key);
-      setSortDir(key === "awayTeam" || key === "homeTeam" || key === "conference" ? "asc" : "desc");
+      setSortDir(key === "awayTeam" || key === "homeTeam" || key === "conference" || key === "commenceTime" ? "asc" : "desc");
     }
   };
 
   const getSortValue = (a, key) => {
     if (key === "overs") return a.totalGamesAnalyzed > 0 ? a.overCount / a.totalGamesAnalyzed : 0;
     if (key === "meetsCriteria") return a.meetsCriteria ? 1 : 0;
+    if (key === "commenceTime") return a.commenceTime ? new Date(a.commenceTime).getTime() : 0;
     return a[key];
   };
 
@@ -133,6 +135,13 @@ export default function PicksTable({ data }) {
                 <td data-label="Away">{a.awayTeam}</td>
                 <td data-label="Home">{a.homeTeam}</td>
                 <td data-label="Conf">{a.conference}</td>
+                <td data-label="Date">
+                  {a.commenceTime ? new Date(a.commenceTime).toLocaleDateString("en-US", {
+                    timeZone: "America/New_York",
+                    month: "numeric",
+                    day: "numeric",
+                  }) : "\u2014"}
+                </td>
                 <td data-label="O/U" className="num">{a.todaysLine}</td>
                 <td data-label="Away Avg" className="num">{a.awayAvg}</td>
                 <td data-label="Home Avg" className="num">{a.homeAvg}</td>

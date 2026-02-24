@@ -69,7 +69,7 @@ export default function Home() {
               {new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" })}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <RefreshButton onRefresh={handleRefresh} loading={loading} />
             <DownloadButton disabled={!data} />
           </div>
