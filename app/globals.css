@@ -316,25 +316,46 @@
     display: none;
   }
 
-  /* Hide column headers — replaced by data-label */
-  .col-header-row {
+  /* Hide column headers */
+  .col-header-row,
+  .col-header-row th {
     display: none;
   }
 
-  /* Game rows: inline labeled pairs */
+  /* Matchup row */
+  .matchup-row td {
+    padding: 10px 10px 2px;
+  }
+
+  .matchup-line {
+    text-align: left !important;
+    padding: 0 10px 6px;
+    font-size: 0.85rem;
+  }
+
+  .matchup-time {
+    display: block;
+    margin-left: 0;
+    margin-top: 2px;
+  }
+
+  /* Team name row */
+  .team-name-row td {
+    padding: 16px 10px 4px;
+  }
+
+  /* Game rows: each td on its own line with label */
   .game-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 12px;
     padding: 6px 10px;
     border-bottom: 1px solid #e5e7eb;
   }
 
   .game-row td {
-    display: inline;
+    display: block;
     width: auto;
-    padding: 0;
+    padding: 1px 0;
     border: none;
+    text-align: left !important;
   }
 
   .game-row td::before {
@@ -343,23 +364,13 @@
     font-size: 0.75rem;
   }
 
-  .game-row td.num {
-    text-align: left !important;
-  }
-
-  /* Team avg row: left-align on mobile */
+  /* Team avg row */
   .team-avg-row .team-avg {
     text-align: left !important;
+    padding: 4px 10px 8px;
   }
 
-  /* Matchup line: stack below team names */
-  .matchup-line {
-    text-align: left !important;
-    padding-top: 0;
-    font-size: 0.85rem;
-  }
-
-  /* Summary row tds stack */
+  /* Summary row */
   .summary-row td {
     text-align: left !important;
     padding: 4px 10px;
@@ -367,7 +378,7 @@
 
   .summary-row td:first-child {
     padding-top: 8px;
-    border-top: 2px solid #d1d5db;
+    border-top: 1px solid #d1d5db;
   }
 
   .summary-row td:last-child {
