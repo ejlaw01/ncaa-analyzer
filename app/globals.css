@@ -48,6 +48,13 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+.matchup-time {
+  margin-left: 12px;
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
 .matchup-line {
   text-align: right !important;
   color: #6b7280;
@@ -56,13 +63,13 @@
   white-space: nowrap;
 }
 
-/* Team name + avg row */
+/* Team name row */
 .team-name-row td {
   background: #fff;
   color: #1f2937;
   font-weight: 600;
   font-size: 0.9rem;
-  padding: 10px 14px 4px;
+  padding: 24px 14px 4px;
   border-top: 1px solid #e5e7eb;
 }
 
@@ -72,10 +79,16 @@
   font-size: 0.85rem;
 }
 
+/* Team avg row (below game rows) */
+.team-avg-row td {
+  background: #fff;
+  padding: 4px 14px 8px;
+}
+
 .team-avg {
   text-align: right !important;
-  color: #16a34a;
-  font-weight: 600 !important;
+  color: #1f2937;
+  font-weight: 700 !important;
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -111,21 +124,23 @@
 
 /* Over / Under result badges */
 .over {
-  display: inline-block;
+  display: block;
   background: #bbf7d0;
   color: #166534;
   font-weight: 600;
   font-size: 0.8rem;
+  text-align: center;
   padding: 1px 8px;
   border-radius: 4px;
 }
 
 .under {
-  display: inline-block;
+  display: block;
   background: #fecaca;
   color: #991b1b;
   font-weight: 600;
   font-size: 0.8rem;
+  text-align: center;
   padding: 1px 8px;
   border-radius: 4px;
 }
@@ -143,27 +158,25 @@
 
 /* Summary row */
 .summary-row td {
-  background: #f9fafb;
   color: #374151;
   font-size: 0.875rem;
-  padding: 10px 14px;
-  border-top: 2px solid #d1d5db;
+  padding: 24px 14px 12px;
+  border-top: 1px solid #d1d5db;
 }
 
 /* Spacer between matchups */
 .spacer-row td {
-  height: 20px;
+  height: 64px;
   padding: 0;
   background: #fff;
   border: none;
 }
 
-/* Conference spacer — extra gap before each conf-row */
-.conf-spacer td {
-  height: 28px;
-  padding: 0;
-  background: #fff;
-  border: none;
+/* Conference tables wrapper */
+.picks-tables {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 /* ── All Games summary table ─────────────────────── */
@@ -334,10 +347,9 @@
     text-align: left !important;
   }
 
-  /* Team name row: stack label + avg */
-  .team-name-row .team-avg {
+  /* Team avg row: left-align on mobile */
+  .team-avg-row .team-avg {
     text-align: left !important;
-    padding-top: 0;
   }
 
   /* Matchup line: stack below team names */
@@ -363,12 +375,13 @@
   }
 
   /* Spacer */
-  .spacer-row,
-  .spacer-row td,
-  .conf-spacer,
-  .conf-spacer td {
+  .spacer-row td {
     height: 12px;
     padding: 0;
+  }
+
+  .picks-tables {
+    gap: 20px;
   }
 
   /* All-table mobile: card-style stacking */

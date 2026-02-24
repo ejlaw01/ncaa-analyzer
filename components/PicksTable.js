@@ -161,11 +161,8 @@ export default function PicksTable({ data }) {
   const renderTeamSection = (teamName, label, history, avg) => (
     <Fragment>
       <tr className="team-name-row">
-        <td colSpan="4">
+        <td colSpan="6">
           {teamName} <span className="team-label">({label})</span>
-        </td>
-        <td colSpan="2" className="team-avg">
-          Avg: {avg} &bull; Overs: {getOvers(history)}
         </td>
       </tr>
       <tr className="col-header-row">
@@ -200,6 +197,11 @@ export default function PicksTable({ data }) {
           </td>
         </tr>
       ))}
+      <tr className="team-avg-row">
+        <td colSpan="6" className="team-avg">
+          Avg: {avg} &bull; Overs: {getOvers(history)}
+        </td>
+      </tr>
     </Fragment>
   );
 
@@ -212,6 +214,18 @@ export default function PicksTable({ data }) {
         <tr className="matchup-row">
           <td colSpan="5">
             {analysis.awayTeam} @ {analysis.homeTeam}
+            {analysis.commenceTime && (
+              <span className="matchup-time">
+                {new Date(analysis.commenceTime).toLocaleString("en-US", {
+                  timeZone: "America/New_York",
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })} ET
+              </span>
+            )}
           </td>
           <td className="matchup-line">
             O/U
@@ -297,33 +311,28 @@ export default function PicksTable({ data }) {
           No recommended picks today.
         </div>
       ) : (
-        <table className="picks-table">
-          <colgroup>
-            <col style={{ width: "90px" }} />
-            <col />
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "80px" }} />
-            <col style={{ width: "90px" }} />
-            <col style={{ width: "80px" }} />
-          </colgroup>
-          <tbody>
-            {Object.entries(filteredConferences).map(
-              ([conf, analyses], confIdx) => (
-                <Fragment key={conf}>
-                  {confIdx > 0 && (
-                    <tr className="conf-spacer">
-                      <td colSpan="6"></td>
-                    </tr>
-                  )}
+        <div className="picks-tables">
+          {Object.entries(filteredConferences).map(
+            ([conf, analyses]) => (
+              <table key={conf} className="picks-table">
+                <colgroup>
+                  <col style={{ width: "90px" }} />
+                  <col />
+                  <col style={{ width: "100px" }} />
+                  <col style={{ width: "80px" }} />
+                  <col style={{ width: "90px" }} />
+                  <col style={{ width: "80px" }} />
+                </colgroup>
+                <tbody>
                   <tr className="conf-row">
                     <td colSpan="6">{conf}</td>
                   </tr>
                   {analyses.map((analysis, i) => renderMatchup(analysis, i))}
-                </Fragment>
-              )
-            )}
-          </tbody>
-        </table>
+                </tbody>
+              </table>
+            )
+          )}
+        </div>
       )}
     </div>
   );
