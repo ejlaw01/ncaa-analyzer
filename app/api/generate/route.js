@@ -6,6 +6,8 @@ import { todayString } from "@/lib/utils";
 import {
   upsertScores,
   upsertGamesWithOdds,
+  upsertPicks,
+  resolvePicks,
   fetchAllScores,
   fetchAllGamesWithOdds,
 } from "@/lib/supabase";
@@ -54,6 +56,9 @@ export async function GET(request) {
       await upsertGamesWithOdds(data.todaysGames);
       await upsertScores(data.recentScores);
 
+      // Resolve any pending picks from previous days against new scores
+      await resolvePicks(data.recentScores);
+
       // Fetch full history from Supabase
       const [dbScores, dbOdds] = await Promise.all([
         fetchAllScores(),
@@ -83,6 +88,13 @@ export async function GET(request) {
 
     // Filter to only recommendations (4+ overs)
     const recommendations = analyses.filter((a) => a.meetsCriteria);
+
+    // Store recommended picks for accuracy tracking
+    try {
+      await upsertPicks(recommendations, todayString());
+    } catch (pickError) {
+      console.error("[Generate] Pick storage error:", pickError.message);
+    }
 
     const result = {
       date: todayString(),

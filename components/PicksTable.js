@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Fragment } from "react";
+import TrackRecord from "@/components/TrackRecord";
 
 export default function PicksTable({ data }) {
   const [activeTab, setActiveTab] = useState("recommended");
@@ -310,10 +311,18 @@ export default function PicksTable({ data }) {
         >
           All Games ({allCount})
         </button>
+        <button
+          onClick={() => setActiveTab("record")}
+          className={`tab-btn ${activeTab === "record" ? "active" : ""}`}
+        >
+          Track Record
+        </button>
       </div>
 
       {/* Table */}
-      {activeTab === "all" ? (
+      {activeTab === "record" ? (
+        <TrackRecord />
+      ) : activeTab === "all" ? (
         renderAllGamesTable()
       ) : !hasResults ? (
         <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
