@@ -100,10 +100,10 @@ export default function TrackRecord() {
                 const pct = total > 0 ? Math.round((s.wins / total) * 1000) / 10 : 0;
                 return (
                   <tr key={str}>
-                    <td className="capitalize">{str}</td>
-                    <td className="num">{s.wins}</td>
-                    <td className="num">{s.losses}</td>
-                    <td className="num">{total > 0 ? `${pct}%` : "\u2014"}</td>
+                    <td data-label="Strength" className="capitalize">{str}</td>
+                    <td data-label="W" className="num">{s.wins}</td>
+                    <td data-label="L" className="num">{s.losses}</td>
+                    <td data-label="Win %" className="num">{total > 0 ? `${pct}%` : "\u2014"}</td>
                   </tr>
                 );
               })}
@@ -132,12 +132,12 @@ export default function TrackRecord() {
             <tbody>
               {recentPicks.map((p, i) => (
                 <tr key={i}>
-                  <td>{new Date(p.date).toLocaleDateString("en-US", { month: "numeric", day: "numeric" })}</td>
-                  <td>{p.matchup}</td>
-                  <td>{p.conference}</td>
-                  <td className="num">{p.line}</td>
-                  <td className="num">{p.actualTotal ?? "\u2014"}</td>
-                  <td>
+                  <td data-label="Date">{new Date(p.date).toLocaleDateString("en-US", { month: "numeric", day: "numeric" })}</td>
+                  <td data-label="Matchup">{p.matchup}</td>
+                  <td data-label="Conf">{p.conference}</td>
+                  <td data-label="Line" className="num">{p.line}</td>
+                  <td data-label="Actual" className="num">{p.actualTotal ?? "\u2014"}</td>
+                  <td data-label="Result">
                     {p.result === "win" ? (
                       <span className="over">WIN</span>
                     ) : p.result === "loss" ? (
