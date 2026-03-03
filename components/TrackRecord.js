@@ -39,7 +39,7 @@ export default function TrackRecord() {
     );
   }
 
-  const { overall, byConference, byStrength, recentPicks } = stats;
+  const { overall, byStrength, recentPicks } = stats;
 
   const pctColor =
     overall.winPct >= 55
@@ -107,41 +107,6 @@ export default function TrackRecord() {
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* By Conference */}
-      {Object.keys(byConference).length > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            By Conference
-          </h3>
-          <table className="all-table">
-            <thead>
-              <tr>
-                <th>Conference</th>
-                <th className="num">W</th>
-                <th className="num">L</th>
-                <th className="num">Win %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(byConference)
-                .sort((a, b) => (b[1].wins + b[1].losses) - (a[1].wins + a[1].losses))
-                .map(([conf, s]) => {
-                  const total = s.wins + s.losses;
-                  const pct = total > 0 ? Math.round((s.wins / total) * 1000) / 10 : 0;
-                  return (
-                    <tr key={conf}>
-                      <td>{conf}</td>
-                      <td className="num">{s.wins}</td>
-                      <td className="num">{s.losses}</td>
-                      <td className="num">{total > 0 ? `${pct}%` : "\u2014"}</td>
-                    </tr>
-                  );
-                })}
             </tbody>
           </table>
         </div>
