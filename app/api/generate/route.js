@@ -86,8 +86,8 @@ export async function GET(request) {
     const analyses = analyzeAllGames(data.todaysGames, enrichedScores, enrichedOdds);
     const grouped = groupByConference(analyses);
 
-    // Filter to only recommendations (4+ overs)
-    const recommendations = analyses.filter((a) => a.meetsCriteria);
+    // Filter to only recommendations (4+ overs AND positive value)
+    const recommendations = analyses.filter((a) => a.meetsCriteria && a.value > 0);
 
     // Store recommended picks for accuracy tracking
     try {

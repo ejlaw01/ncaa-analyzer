@@ -27,7 +27,7 @@ export default function PicksTable({ data }) {
     for (const [conf, analyses] of Object.entries(byConference)) {
       const filtered =
         activeTab === "recommended"
-          ? analyses.filter((a) => a.meetsCriteria)
+          ? analyses.filter((a) => a.meetsCriteria && a.value > 0)
           : analyses;
       if (filtered.length > 0) {
         result[conf] = filtered;
