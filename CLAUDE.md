@@ -41,7 +41,7 @@ Next.js 14 App Router application that analyzes NCAA basketball over/under betti
 
 - `ODDS_API_KEY` — Required. The Odds API key (free tier: 500 req/month)
 - `NEXT_PUBLIC_APP_URL` — App base URL
-- `SUPABASE_URL` / `SUPABASE_ANON_KEY` — Optional. Enables historical data enrichment
+- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — Optional. Enables historical data enrichment
 
 ## Deployment
 
