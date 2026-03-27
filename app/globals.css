@@ -55,6 +55,12 @@
   font-size: 0.85rem;
 }
 
+.game-date {
+  padding: 1px 6px;
+  font-weight: 600;
+  color: #313f8b;
+}
+
 .matchup-line {
   text-align: right !important;
   color: #6b7280;
@@ -233,8 +239,20 @@
   text-align: left;
 }
 
+.all-table tbody tr {
+  cursor: pointer;
+}
+
 .all-table tbody tr:hover td {
   background: #f9fafb;
+}
+
+.all-table tbody tr.row-highlighted td {
+  background: #fef9c3;
+}
+
+.all-table tbody tr.row-highlighted:hover td {
+  background: #fef08a;
 }
 
 .all-table .num {

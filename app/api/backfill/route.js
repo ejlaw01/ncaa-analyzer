@@ -42,6 +42,13 @@ function eventToScore(event) {
  * Requires ODDS_API_TIER=paid.
  */
 export async function GET(request) {
+  // Backfill is disabled — Supabase now accumulates history organically
+  // via the daily cron job. Re-enable only if seeding a fresh database.
+  return NextResponse.json(
+    { error: "Backfill is disabled. Historical data is now collected automatically via daily cron." },
+    { status: 403 }
+  );
+
   if (!isPaidTier()) {
     return NextResponse.json(
       { error: "Backfill requires ODDS_API_TIER=paid" },

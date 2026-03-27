@@ -7,6 +7,7 @@ export default function PicksTable({ data }) {
   const [activeTab, setActiveTab] = useState("recommended");
   const [sortCol, setSortCol] = useState("value");
   const [sortDir, setSortDir] = useState("desc");
+  const [highlighted, setHighlighted] = useState(new Set());
 
   if (!data) {
     return (
@@ -128,11 +129,25 @@ export default function PicksTable({ data }) {
         </thead>
         <tbody>
           {sorted.map((a, i) => {
+            const rowKey = `${a.awayTeam}-${a.homeTeam}`;
+            const isHighlighted = highlighted.has(rowKey);
+            const toggleHighlight = () => {
+              setHighlighted((prev) => {
+                const next = new Set(prev);
+                if (next.has(rowKey)) next.delete(rowKey);
+                else next.add(rowKey);
+                return next;
+              });
+            };
             const valueDisplay = `${a.value > 0 ? "+" : ""}${a.value}`;
             const valueClass =
               a.value > 10 ? "value-badge" : a.value > 0 ? "value-pos" : a.value < 0 ? "value-neg" : "";
             return (
-              <tr key={`${a.awayTeam}-${a.homeTeam}-${i}`}>
+              <tr
+                key={`${rowKey}-${i}`}
+                className={isHighlighted ? "row-highlighted" : ""}
+                onClick={toggleHighlight}
+              >
                 <td data-label="Away">{a.awayTeam}</td>
                 <td data-label="Home">{a.homeTeam}</td>
                 <td data-label="Conf">{a.conference}</td>
@@ -225,7 +240,7 @@ export default function PicksTable({ data }) {
           <td colSpan="5">
             {analysis.awayTeam} @ {analysis.homeTeam}
             {analysis.commenceTime && (
-              <span className="matchup-time">
+              <span className="matchup-time game-date">
                 {new Date(analysis.commenceTime).toLocaleString("en-US", {
                   timeZone: "America/New_York",
                   month: "short",

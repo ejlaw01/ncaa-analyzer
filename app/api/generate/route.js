@@ -15,6 +15,45 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
+ * Remove speculative/phantom games by keeping only the earliest
+ * upcoming game per team. During tournaments, the Odds API publishes
+ * odds for projected future-round matchups before teams have advanced.
+ * A team can only play one next game, so we keep the soonest and drop the rest.
+ */
+function deduplicateByTeam(games) {
+  // Track the earliest game each team appears in
+  const earliestByTeam = new Map();
+
+  const sorted = [...games].sort(
+    (a, b) => new Date(a.commenceTime) - new Date(b.commenceTime)
+  );
+
+  const keepIds = new Set();
+
+  for (const game of sorted) {
+    const homeSeen = earliestByTeam.has(game.homeTeam);
+    const awaySeen = earliestByTeam.has(game.awayTeam);
+
+    if (homeSeen || awaySeen) {
+      // At least one team already has an earlier game — skip this one
+      continue;
+    }
+
+    earliestByTeam.set(game.homeTeam, game.id);
+    earliestByTeam.set(game.awayTeam, game.id);
+    keepIds.add(game.id);
+  }
+
+  const filtered = games.filter((g) => keepIds.has(g.id));
+  if (filtered.length < games.length) {
+    console.log(
+      `[Generate] Dedup: removed ${games.length - filtered.length} speculative game(s)`
+    );
+  }
+  return filtered;
+}
+
+/**
  * Merge two arrays by `id`, with `primary` winning on conflicts.
  */
 function mergeById(primary, secondary) {
@@ -46,6 +85,9 @@ export async function GET(request) {
 
     // Fetch data from Odds API (cached or fresh)
     const data = await fetchAllData();
+
+    // Remove speculative tournament games (keep only earliest game per team)
+    data.todaysGames = deduplicateByTeam(data.todaysGames);
 
     // --- Supabase: store + enrich (graceful fallback on error) ---
     let enrichedScores = data.recentScores;
@@ -121,13 +163,17 @@ export async function GET(request) {
   } catch (error) {
     console.error("[/api/generate] Error:", error);
 
-    const status = error.message.includes("rate limit") ? 429 : 500;
-    const userMessage =
-      status === 429
-        ? "API rate limit reached. Please try again later."
-        : error.message.includes("ODDS_API_KEY")
-          ? "API key not configured. Add ODDS_API_KEY to your environment variables."
-          : "Failed to generate picks. Please try again.";
+    const isQuotaError =
+      error.message.includes("rate limit") ||
+      error.message.includes("quota") ||
+      error.message.includes("OUT_OF_USAGE_CREDITS") ||
+      error.message.includes("401");
+    const status = isQuotaError ? 429 : 500;
+    const userMessage = isQuotaError
+      ? "API usage quota has been reached for this month. Data will refresh when the quota resets."
+      : error.message.includes("ODDS_API_KEY")
+        ? "API key not configured. Add ODDS_API_KEY to your environment variables."
+        : "Failed to generate picks. Please try again.";
 
     return NextResponse.json(
       {

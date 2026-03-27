@@ -21,6 +21,12 @@ export default function Home() {
         if (res.ok) {
           setData(json);
         } else {
+          // If generate fails (e.g. API quota), try serving cached picks
+          const fallback = await fetch("/api/picks");
+          const fallbackJson = await fallback.json();
+          if (fallback.ok && fallbackJson.data) {
+            setData(fallbackJson.data);
+          }
           setError(json.error || "Failed to generate picks");
         }
       } catch (err) {
@@ -75,19 +81,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Last generated timestamp */}
+        {/* Last generated timestamp + API quota */}
         {data?.generatedAt && (
-          <div className="mt-2 text-xs text-gray-400">
-            Last generated:{" "}
-            {new Date(data.generatedAt).toLocaleString("en-US", {
-              timeZone: "America/New_York",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-              month: "short",
-              day: "numeric",
-            })}{" "}
-            ET
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+            {data.apiQuota && data.apiQuota.total > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${
+                  data.apiQuota.remaining === 0 ? "bg-red-500" :
+                  data.apiQuota.remaining < 50 ? "bg-orange-500" :
+                  data.apiQuota.remaining < 200 ? "bg-yellow-500" : "bg-green-500"
+                }`} />
+                {data.apiQuota.used}/{data.apiQuota.total} credits ({data.apiQuota.plan})
+              </span>
+            )}
+            <span>
+              Last generated:{" "}
+              {new Date(data.generatedAt).toLocaleString("en-US", {
+                timeZone: "America/New_York",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                month: "short",
+                day: "numeric",
+              })}{" "}
+              ET
+            </span>
           </div>
         )}
       </header>
