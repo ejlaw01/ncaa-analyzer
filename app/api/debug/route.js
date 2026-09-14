@@ -4,6 +4,11 @@ import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
+  // Local development only — don't expose database contents on deployed environments
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -44,14 +49,20 @@ export async function GET(request) {
   // Team-specific lookup
   let teamGames = null;
   if (team) {
-    const { data } = await client
-      .from("games")
-      .select("*")
-      .not("total_score", "is", null)
-      .or(`home_team.eq.${team},away_team.eq.${team}`)
-      .order("commence_time", { ascending: false })
-      .limit(10);
-    teamGames = data;
+    // Separate .eq() queries so the team name is passed as a value, not spliced into filter syntax
+    const teamQuery = (column) =>
+      client
+        .from("games")
+        .select("*")
+        .not("total_score", "is", null)
+        .eq(column, team)
+        .order("commence_time", { ascending: false })
+        .limit(10);
+
+    const [home, away] = await Promise.all([teamQuery("home_team"), teamQuery("away_team")]);
+    teamGames = [...(home.data || []), ...(away.data || [])]
+      .sort((a, b) => new Date(b.commence_time) - new Date(a.commence_time))
+      .slice(0, 10);
   }
 
   return NextResponse.json({
